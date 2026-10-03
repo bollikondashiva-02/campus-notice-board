@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
@@ -13,6 +12,8 @@ function AdminDashboard() {
     const [message, setMessage] = useState("");
     const [saving, setSaving] = useState(false);
     const [notices, setNotices] = useState([]);
+    const [search, setSearch] = useState("");
+    const [filterCategory, setFilterCategory] = useState("All");
 
     const [editingId, setEditingId] = useState(null);
     const [editTitle, setEditTitle] = useState("");
@@ -51,7 +52,21 @@ function AdminDashboard() {
     const newestNotice =
         notices.length > 0 ? notices[0] : null;
 
+    const filteredNotices = notices.filter((notice) => {
+        const matchesSearch =
+            notice.title
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+            notice.description
+                .toLowerCase()
+                .includes(search.toLowerCase());
 
+        const matchesCategory =
+            filterCategory === "All" ||
+            notice.category === filterCategory;
+
+        return matchesSearch && matchesCategory;
+    });
 
     async function fetchNotices() {
         const { data, error } = await supabase
@@ -606,17 +621,61 @@ function AdminDashboard() {
                         View and manage all published campus announcements.
                     </p>
 
+                    <div className="admin-notice-filters">
+
+                        <input
+                            type="text"
+                            placeholder="🔍 Search notices..."
+                            value={search}
+                            onChange={(e) =>
+                                setSearch(e.target.value)
+                            }
+                        />
+
+                        <select
+                            value={filterCategory}
+                            onChange={(e) =>
+                                setFilterCategory(e.target.value)
+                            }
+                        >
+                            <option value="All">
+                                All Categories
+                            </option>
+
+                            <option value="General">
+                                General
+                            </option>
+
+                            <option value="Exam">
+                                Exam
+                            </option>
+
+                            <option value="Event">
+                                Event
+                            </option>
+
+                            <option value="Placement">
+                                Placement
+                            </option>
+                        </select>
+
+                    </div>
+
                     <div className="admin-notice-list">
 
-                        {notices.length === 0 ? (
+                        {filteredNotices.length === 0 ? (
 
                             <p className="no-notices">
-                                No notices available.
+
+                                {notices.length === 0
+                                    ? "No notices available"
+                                    : "No notices match your search or filter"}
+
                             </p>
 
                         ) : (
 
-                            notices.map((notice) => (
+                            filteredNotices.map((notice) => (
 
                                 <div
                                     className="admin-notice-item"
@@ -799,4 +858,3 @@ function AdminDashboard() {
 }
 
 export default AdminDashboard;
-
