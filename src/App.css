@@ -2958,10 +2958,12 @@ textarea {
 
 @media (max-width: 768px) {
 
-  .admin-stats {
-    grid-template-columns: 1fr;
-  }
-
+ .admin-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 25px;
+}
   .admin-header-actions {
     width: 100%;
   }

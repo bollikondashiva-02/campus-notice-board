@@ -49,6 +49,15 @@ function AdminDashboard() {
         (notice) => notice.category === "Placement"
     ).length;
 
+    const recentNoticesCount = notices.filter((notice) => {
+        const noticeDate = new Date(notice.created_at);
+        const sevenDaysAgo = new Date();
+
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        return noticeDate >= sevenDaysAgo;
+    }).length;
+
     const newestNotice =
         notices.length > 0 ? notices[0] : null;
 
@@ -367,6 +376,25 @@ function AdminDashboard() {
 
                         <h3>
                             {categoriesUsed}
+                        </h3>
+                    </div>
+
+                </div>
+
+
+                <div className="stat-card">
+
+                    <div className="stat-icon">
+                        📅
+                    </div>
+
+                    <div>
+                        <p>
+                            Notices This Week
+                        </p>
+
+                        <h3>
+                            {recentNoticesCount}
                         </h3>
                     </div>
 
