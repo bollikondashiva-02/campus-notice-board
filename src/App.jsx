@@ -23,9 +23,6 @@ function Home() {
   const [category, setCategory] = useState("All");
   const [user, setUser] = useState(undefined);
 
-  const [notifications, setNotifications] = useState([]);
-  const [showNotifications, setShowNotifications] = useState(false);
-
   const navigate = useNavigate();
 
   async function handleLogout() {
@@ -78,7 +75,7 @@ function Home() {
         return;
       }
 
-      setNotices(data);
+      setNotices(data || []);
       setNoticesLoading(false);
     }
 
@@ -87,19 +84,26 @@ function Home() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      const currentUser = session?.user ?? null;
+    } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        const currentUser =
+          session?.user ?? null;
 
-      if (!isMounted) {
-        return;
+        if (!isMounted) {
+          return;
+        }
+
+        setUser(currentUser);
+
+        if (!currentUser) {
+          navigate("/login");
+        }
       }
+    );
 
-      setUser(currentUser);
-
-      if (!currentUser) {
-        navigate("/login");
-      }
-    });
+    /* ================================
+       REALTIME NOTICE UPDATES
+    ================================= */
 
     const channel = supabase
       .channel("notices-realtime")
@@ -113,15 +117,18 @@ function Home() {
         (payload) => {
           loadNotices();
 
-          if (payload.eventType === "INSERT") {
-            setNotifications((currentNotifications) => [
-              payload.new,
-              ...currentNotifications,
-            ]);
-          }
+          console.log(
+            "Notice realtime update:",
+            payload.eventType
+          );
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log(
+          "Notice realtime status:",
+          status
+        );
+      });
 
     return () => {
       isMounted = false;
@@ -154,12 +161,17 @@ function Home() {
     const currentDate = new Date();
 
     const difference =
-      currentDate.getTime() - noticeDate.getTime();
+      currentDate.getTime() -
+      noticeDate.getTime();
 
     const daysDifference =
-      difference / (1000 * 60 * 60 * 24);
+      difference /
+      (1000 * 60 * 60 * 24);
 
-    return daysDifference >= 0 && daysDifference <= 3;
+    return (
+      daysDifference >= 0 &&
+      daysDifference <= 3
+    );
   }
 
   /* ================================
@@ -169,15 +181,18 @@ function Home() {
   const totalNotices = notices.length;
 
   const examNotices = notices.filter(
-    (notice) => notice.category === "Exam"
+    (notice) =>
+      notice.category === "Exam"
   ).length;
 
   const eventNotices = notices.filter(
-    (notice) => notice.category === "Event"
+    (notice) =>
+      notice.category === "Event"
   ).length;
 
   const placementNotices = notices.filter(
-    (notice) => notice.category === "Placement"
+    (notice) =>
+      notice.category === "Placement"
   ).length;
 
   /* ================================
@@ -236,113 +251,15 @@ function Home() {
           {user ? (
             <>
               {/* ================================
-                  NOTIFICATIONS
-              ================================= */}
-
-              <div className="notification-wrapper">
-
-                <button
-                  className="notification-button"
-                  onClick={() =>
-                    setShowNotifications(!showNotifications)
-                  }
-                  title="Notifications"
-                >
-                  🔔
-
-                  {notifications.length > 0 && (
-                    <span className="notification-badge">
-                      {notifications.length}
-                    </span>
-                  )}
-                </button>
-
-                {showNotifications && (
-                  <div className="notification-panel">
-
-                    <div className="notification-panel-header">
-
-                      <h3>
-                        Notifications
-                      </h3>
-
-                      <span>
-                        {notifications.length} new
-                      </span>
-
-                    </div>
-
-                    {notifications.length === 0 ? (
-                      <div className="no-notifications">
-
-                        <div>
-                          🔕
-                        </div>
-
-                        <p>
-                          No new notifications
-                        </p>
-
-                      </div>
-                    ) : (
-                      <div className="notification-list">
-
-                        {notifications.map((notice) => (
-
-                          <Link
-                            key={notice.id}
-                            to={`/notice/${notice.id}`}
-                            className="notification-item"
-                            onClick={() =>
-                              setShowNotifications(false)
-                            }
-                          >
-
-                            <div className="notification-icon">
-                              {getCategoryIcon(
-                                notice.category
-                              )}
-                            </div>
-
-                            <div className="notification-content">
-
-                              <strong>
-                                {notice.title}
-                              </strong>
-
-                              <span>
-                                {notice.category}
-                              </span>
-
-                              <small>
-                                📅{" "}
-                                {new Date(
-                                  notice.created_at
-                                ).toLocaleDateString()}
-                              </small>
-
-                            </div>
-
-                          </Link>
-
-                        ))}
-
-                      </div>
-                    )}
-
-                  </div>
-                )}
-
-              </div>
-
-              {/* ================================
                   USER PROFILE
               ================================= */}
 
               <div className="user-profile">
 
                 <div className="user-avatar">
-                  {user.email?.charAt(0).toUpperCase()}
+                  {user.email
+                    ?.charAt(0)
+                    .toUpperCase()}
                 </div>
 
                 <div className="user-details">
@@ -567,68 +484,70 @@ function Home() {
 
             <div className="recent-notices-grid">
 
-              {recentlyAddedNotices.map((notice) => (
+              {recentlyAddedNotices.map(
+                (notice) => (
 
-                <Link
-                  to={`/notice/${notice.id}`}
-                  key={notice.id}
-                  className="recent-notice-link"
-                >
+                  <Link
+                    to={`/notice/${notice.id}`}
+                    key={notice.id}
+                    className="recent-notice-link"
+                  >
 
-                  <div className="recent-notice-card">
+                    <div className="recent-notice-card">
 
-                    <div className="recent-card-top">
+                      <div className="recent-card-top">
 
-                      <span className="recent-category">
+                        <span className="recent-category">
 
-                        <span className="recent-category-icon">
-                          {getCategoryIcon(
-                            notice.category
-                          )}
+                          <span className="recent-category-icon">
+                            {getCategoryIcon(
+                              notice.category
+                            )}
+                          </span>
+
+                          {notice.category}
+
                         </span>
 
-                        {notice.category}
-
-                      </span>
-
-                      {isNewNotice(
-                        notice.created_at
-                      ) && (
-                        <span className="recent-new-badge">
-                          NEW
-                        </span>
-                      )}
-
-                    </div>
-
-                    <h3>
-                      {notice.title}
-                    </h3>
-
-                    <p>
-                      {notice.description}
-                    </p>
-
-                    <div className="recent-card-footer">
-
-                      <span>
-                        📅{" "}
-                        {new Date(
+                        {isNewNotice(
                           notice.created_at
-                        ).toLocaleDateString()}
-                      </span>
+                        ) && (
+                          <span className="recent-new-badge">
+                            NEW
+                          </span>
+                        )}
 
-                      <span className="recent-view">
-                        View →
-                      </span>
+                      </div>
+
+                      <h3>
+                        {notice.title}
+                      </h3>
+
+                      <p>
+                        {notice.description}
+                      </p>
+
+                      <div className="recent-card-footer">
+
+                        <span>
+                          📅{" "}
+                          {new Date(
+                            notice.created_at
+                          ).toLocaleDateString()}
+                        </span>
+
+                        <span className="recent-view">
+                          View →
+                        </span>
+
+                      </div>
 
                     </div>
 
-                  </div>
+                  </Link>
 
-                </Link>
-
-              ))}
+                )
+              )}
 
             </div>
 
@@ -678,81 +597,83 @@ function Home() {
         ) : (
           <div className="notice-list">
 
-            {filteredNotices.map((notice) => (
+            {filteredNotices.map(
+              (notice) => (
 
-              <Link
-                to={`/notice/${notice.id}`}
-                key={notice.id}
-                className="notice-link"
-              >
+                <Link
+                  to={`/notice/${notice.id}`}
+                  key={notice.id}
+                  className="notice-link"
+                >
 
-                <div className="notice-card">
+                  <div className="notice-card">
 
-                  <div className="notice-top">
+                    <div className="notice-top">
 
-                    <div className="notice-category-group">
+                      <div className="notice-category-group">
 
-                      <span className="notice-category-icon">
-                        {getCategoryIcon(
-                          notice.category
-                        )}
-                      </span>
-
-                      <span className="category">
-                        {notice.category}
-                      </span>
-
-                      {isNewNotice(
-                        notice.created_at
-                      ) && (
-                        <span className="new-badge">
-                          NEW
+                        <span className="notice-category-icon">
+                          {getCategoryIcon(
+                            notice.category
+                          )}
                         </span>
-                      )}
+
+                        <span className="category">
+                          {notice.category}
+                        </span>
+
+                        {isNewNotice(
+                          notice.created_at
+                        ) && (
+                          <span className="new-badge">
+                            NEW
+                          </span>
+                        )}
+
+                      </div>
+
+                      <span className="date">
+
+                        📅{" "}
+
+                        {new Date(
+                          notice.created_at
+                        ).toLocaleDateString()}
+
+                      </span>
 
                     </div>
 
-                    <span className="date">
+                    <div className="notice-content">
 
-                      📅{" "}
+                      <h3>
+                        {notice.title}
+                      </h3>
 
-                      {new Date(
-                        notice.created_at
-                      ).toLocaleDateString()}
+                      <p>
+                        {notice.description}
+                      </p>
 
-                    </span>
+                    </div>
 
-                  </div>
+                    <div className="notice-footer">
 
-                  <div className="notice-content">
+                      <span>
+                        📢 Campus Announcement
+                      </span>
 
-                    <h3>
-                      {notice.title}
-                    </h3>
+                      <span className="view-notice">
+                        View Notice →
+                      </span>
 
-                    <p>
-                      {notice.description}
-                    </p>
-
-                  </div>
-
-                  <div className="notice-footer">
-
-                    <span>
-                      📢 Campus Announcement
-                    </span>
-
-                    <span className="view-notice">
-                      View Notice →
-                    </span>
+                    </div>
 
                   </div>
 
-                </div>
+                </Link>
 
-              </Link>
-
-            ))}
+              )
+            )}
 
           </div>
         )}

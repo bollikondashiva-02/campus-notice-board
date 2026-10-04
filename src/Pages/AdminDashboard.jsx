@@ -1,7 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./AdminDashboard.css";
+
 function AdminDashboard() {
     const [user, setUser] = useState(null);
     const [checking, setChecking] = useState(true);
@@ -9,9 +11,11 @@ function AdminDashboard() {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [category, setCategory] = useState("General");
+
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState("success");
     const [saving, setSaving] = useState(false);
+
     const [notices, setNotices] = useState([]);
     const [search, setSearch] = useState("");
     const [filterCategory, setFilterCategory] = useState("All");
@@ -153,11 +157,13 @@ function AdminDashboard() {
             setUser(user);
             setChecking(false);
 
-            const { data: noticesData, error: noticesError } =
-                await supabase
-                    .from("notices")
-                    .select("*")
-                    .order("created_at", { ascending: false });
+            const {
+                data: noticesData,
+                error: noticesError,
+            } = await supabase
+                .from("notices")
+                .select("*")
+                .order("created_at", { ascending: false });
 
             if (!isMounted) {
                 return;
@@ -200,8 +206,16 @@ function AdminDashboard() {
         setSaving(false);
 
         if (error) {
-            console.error("Create Notice Error:", error);
-            showMessage(error.message, "error");
+            console.error(
+                "Create Notice Error:",
+                error
+            );
+
+            showMessage(
+                error.message,
+                "error"
+            );
+
             return;
         }
 
@@ -323,9 +337,9 @@ function AdminDashboard() {
     return (
         <div className="admin-page">
 
-            {/* =========================================
+            {/* ================================
                 ADMIN HEADER
-            ========================================== */}
+            ================================= */}
 
             <div className="admin-header">
 
@@ -372,10 +386,9 @@ function AdminDashboard() {
 
             </div>
 
-
-            {/* =========================================
-                STATISTICS
-            ========================================== */}
+            {/* ================================
+                ADMIN STATISTICS
+            ================================= */}
 
             <div className="admin-stats admin-stats-grid">
 
@@ -397,7 +410,6 @@ function AdminDashboard() {
 
                 </div>
 
-
                 <div className="stat-card">
 
                     <div className="stat-icon">
@@ -416,7 +428,6 @@ function AdminDashboard() {
 
                 </div>
 
-
                 <div className="stat-card">
 
                     <div className="stat-icon">
@@ -434,7 +445,6 @@ function AdminDashboard() {
                     </div>
 
                 </div>
-
 
                 <div className="stat-card">
 
@@ -456,12 +466,12 @@ function AdminDashboard() {
 
             </div>
 
-
-            {/* =========================================
+            {/* ================================
                 NEWEST NOTICE
-            ========================================== */}
+            ================================= */}
 
             {newestNotice && (
+
                 <div className="newest-notice-card">
 
                     <div className="newest-notice-icon">
@@ -508,12 +518,12 @@ function AdminDashboard() {
                     </div>
 
                 </div>
+
             )}
 
-
-            {/* =========================================
+            {/* ================================
                 CATEGORY SUMMARY
-            ========================================== */}
+            ================================= */}
 
             <div className="category-summary">
 
@@ -529,7 +539,6 @@ function AdminDashboard() {
                             <span className="category-summary-label-icon">
                                 📢
                             </span>
-
                             General
                         </p>
 
@@ -540,7 +549,6 @@ function AdminDashboard() {
                     </div>
 
                 </div>
-
 
                 <div className="category-summary-card">
 
@@ -554,7 +562,6 @@ function AdminDashboard() {
                             <span className="category-summary-label-icon">
                                 📝
                             </span>
-
                             Exam
                         </p>
 
@@ -565,7 +572,6 @@ function AdminDashboard() {
                     </div>
 
                 </div>
-
 
                 <div className="category-summary-card">
 
@@ -579,7 +585,6 @@ function AdminDashboard() {
                             <span className="category-summary-label-icon">
                                 🎉
                             </span>
-
                             Event
                         </p>
 
@@ -590,7 +595,6 @@ function AdminDashboard() {
                     </div>
 
                 </div>
-
 
                 <div className="category-summary-card">
 
@@ -604,7 +608,6 @@ function AdminDashboard() {
                             <span className="category-summary-label-icon">
                                 💼
                             </span>
-
                             Placement
                         </p>
 
@@ -618,17 +621,15 @@ function AdminDashboard() {
 
             </div>
 
-
-            {/* =========================================
-                MAIN ADMIN CONTENT
-            ========================================== */}
+            {/* ================================
+                ADMIN CONTENT
+            ================================= */}
 
             <div className="admin-content">
 
-
-                {/* =====================================
+                {/* ================================
                     CREATE NOTICE
-                ====================================== */}
+                ================================= */}
 
                 <div className="admin-card">
 
@@ -709,6 +710,7 @@ function AdminDashboard() {
                     </form>
 
                     {message && (
+
                         <div
                             className={`admin-message ${messageType}`}
                         >
@@ -734,14 +736,14 @@ function AdminDashboard() {
                             </button>
 
                         </div>
+
                     )}
 
                 </div>
 
-
-                {/* =====================================
+                {/* ================================
                     MANAGE NOTICES
-                ====================================== */}
+                ================================= */}
 
                 <div className="admin-card">
 
@@ -757,8 +759,7 @@ function AdminDashboard() {
                         View and manage all published campus announcements.
                     </p>
 
-
-                    {/* SEARCH + FILTER */}
+                    {/* Search and Filter */}
 
                     <div className="admin-notice-filters">
 
@@ -784,6 +785,7 @@ function AdminDashboard() {
                             />
 
                             {search && (
+
                                 <button
                                     type="button"
                                     className="admin-search-clear"
@@ -794,10 +796,10 @@ function AdminDashboard() {
                                 >
                                     ×
                                 </button>
+
                             )}
 
                         </div>
-
 
                         <div className="admin-category-filter">
 
@@ -844,29 +846,21 @@ function AdminDashboard() {
 
                     </div>
 
-
-                    {/* FILTER RESULT */}
+                    {/* Filter Result */}
 
                     <div className="admin-filter-result">
 
                         <span>
-
                             Showing{" "}
-
                             <strong>
                                 {filteredNotices.length}
                             </strong>{" "}
-
                             of{" "}
-
                             <strong>
                                 {notices.length}
                             </strong>{" "}
-
                             notices
-
                         </span>
-
 
                         {(search ||
                             filterCategory !== "All") && (
@@ -886,8 +880,7 @@ function AdminDashboard() {
 
                     </div>
 
-
-                    {/* NOTICE LIST */}
+                    {/* Notice List */}
 
                     <div className="admin-notice-list">
 
@@ -912,9 +905,9 @@ function AdminDashboard() {
 
                                     {editingId === notice.id ? (
 
-                                        /* =================================
-                                           EDIT NOTICE
-                                        ================================== */
+                                        /* ================================
+                                           EDIT FORM
+                                        ================================= */
 
                                         <div className="edit-form">
 
@@ -930,7 +923,6 @@ function AdminDashboard() {
 
                                             </div>
 
-
                                             <input
                                                 type="text"
                                                 value={editTitle}
@@ -943,7 +935,6 @@ function AdminDashboard() {
                                                 required
                                             />
 
-
                                             <textarea
                                                 value={editDescription}
                                                 onChange={(e) =>
@@ -954,7 +945,6 @@ function AdminDashboard() {
                                                 placeholder="Notice description"
                                                 required
                                             />
-
 
                                             <select
                                                 value={editCategory}
@@ -983,7 +973,6 @@ function AdminDashboard() {
 
                                             </select>
 
-
                                             <div className="edit-actions">
 
                                                 <button
@@ -997,7 +986,6 @@ function AdminDashboard() {
                                                 >
                                                     💾 Save Changes
                                                 </button>
-
 
                                                 <button
                                                     type="button"
@@ -1015,9 +1003,9 @@ function AdminDashboard() {
 
                                     ) : (
 
-                                        /* =================================
+                                        /* ================================
                                            NOTICE DISPLAY
-                                        ================================== */
+                                        ================================= */
 
                                         <div className="admin-notice-info">
 
@@ -1033,16 +1021,13 @@ function AdminDashboard() {
 
                                             </span>
 
-
                                             <h3>
                                                 {notice.title}
                                             </h3>
 
-
                                             <p>
                                                 {notice.description}
                                             </p>
-
 
                                             <small>
                                                 📅{" "}
@@ -1050,7 +1035,6 @@ function AdminDashboard() {
                                                     notice.created_at
                                                 ).toLocaleDateString()}
                                             </small>
-
 
                                             <div className="admin-notice-actions">
 
@@ -1065,7 +1049,6 @@ function AdminDashboard() {
                                                 >
                                                     ✏️ Edit
                                                 </button>
-
 
                                                 <button
                                                     type="button"
@@ -1102,3 +1085,4 @@ function AdminDashboard() {
 }
 
 export default AdminDashboard;
+
