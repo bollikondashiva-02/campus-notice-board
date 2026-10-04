@@ -23,6 +23,9 @@ function Home() {
   const [category, setCategory] = useState("All");
   const [user, setUser] = useState(undefined);
 
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+
   const navigate = useNavigate();
 
   async function handleLogout() {
@@ -107,8 +110,15 @@ function Home() {
           schema: "public",
           table: "notices",
         },
-        () => {
+        (payload) => {
           loadNotices();
+
+          if (payload.eventType === "INSERT") {
+            setNotifications((currentNotifications) => [
+              payload.new,
+              ...currentNotifications,
+            ]);
+          }
         }
       )
       .subscribe();
@@ -225,12 +235,118 @@ function Home() {
 
           {user ? (
             <>
+              {/* ================================
+                  NOTIFICATIONS
+              ================================= */}
+
+              <div className="notification-wrapper">
+
+                <button
+                  className="notification-button"
+                  onClick={() =>
+                    setShowNotifications(!showNotifications)
+                  }
+                  title="Notifications"
+                >
+                  🔔
+
+                  {notifications.length > 0 && (
+                    <span className="notification-badge">
+                      {notifications.length}
+                    </span>
+                  )}
+                </button>
+
+                {showNotifications && (
+                  <div className="notification-panel">
+
+                    <div className="notification-panel-header">
+
+                      <h3>
+                        Notifications
+                      </h3>
+
+                      <span>
+                        {notifications.length} new
+                      </span>
+
+                    </div>
+
+                    {notifications.length === 0 ? (
+                      <div className="no-notifications">
+
+                        <div>
+                          🔕
+                        </div>
+
+                        <p>
+                          No new notifications
+                        </p>
+
+                      </div>
+                    ) : (
+                      <div className="notification-list">
+
+                        {notifications.map((notice) => (
+
+                          <Link
+                            key={notice.id}
+                            to={`/notice/${notice.id}`}
+                            className="notification-item"
+                            onClick={() =>
+                              setShowNotifications(false)
+                            }
+                          >
+
+                            <div className="notification-icon">
+                              {getCategoryIcon(
+                                notice.category
+                              )}
+                            </div>
+
+                            <div className="notification-content">
+
+                              <strong>
+                                {notice.title}
+                              </strong>
+
+                              <span>
+                                {notice.category}
+                              </span>
+
+                              <small>
+                                📅{" "}
+                                {new Date(
+                                  notice.created_at
+                                ).toLocaleDateString()}
+                              </small>
+
+                            </div>
+
+                          </Link>
+
+                        ))}
+
+                      </div>
+                    )}
+
+                  </div>
+                )}
+
+              </div>
+
+              {/* ================================
+                  USER PROFILE
+              ================================= */}
+
               <div className="user-profile">
+
                 <div className="user-avatar">
                   {user.email?.charAt(0).toUpperCase()}
                 </div>
 
                 <div className="user-details">
+
                   <span className="user-role">
                     Student
                   </span>
@@ -238,7 +354,9 @@ function Home() {
                   <span className="user-email">
                     {user.email}
                   </span>
+
                 </div>
+
               </div>
 
               <button
@@ -247,6 +365,7 @@ function Home() {
               >
                 Logout
               </button>
+
             </>
           ) : (
             <>
@@ -429,6 +548,7 @@ function Home() {
             <div className="section-heading">
 
               <div>
+
                 <span className="section-label">
                   LATEST UPDATES
                 </span>
@@ -436,6 +556,7 @@ function Home() {
                 <h2>
                   Recently Added
                 </h2>
+
               </div>
 
               <span className="recent-count">
@@ -546,24 +667,35 @@ function Home() {
 
         {noticesLoading ? (
           <div className="notices-loading">
+
             <div className="loading-spinner"></div>
-            <p>Loading notices...</p>
+
+            <p>
+              Loading notices...
+            </p>
+
           </div>
         ) : (
           <div className="notice-list">
+
             {filteredNotices.map((notice) => (
+
               <Link
                 to={`/notice/${notice.id}`}
                 key={notice.id}
                 className="notice-link"
               >
+
                 <div className="notice-card">
+
                   <div className="notice-top">
 
                     <div className="notice-category-group">
 
                       <span className="notice-category-icon">
-                        {getCategoryIcon(notice.category)}
+                        {getCategoryIcon(
+                          notice.category
+                        )}
                       </span>
 
                       <span className="category">
@@ -581,10 +713,13 @@ function Home() {
                     </div>
 
                     <span className="date">
+
                       📅{" "}
+
                       {new Date(
                         notice.created_at
                       ).toLocaleDateString()}
+
                     </span>
 
                   </div>
@@ -614,14 +749,18 @@ function Home() {
                   </div>
 
                 </div>
+
               </Link>
+
             ))}
+
           </div>
         )}
 
         {/* No Search Results */}
 
         {filteredNotices.length === 0 && (
+
           <div className="no-results">
 
             <div className="no-results-icon">
@@ -647,6 +786,7 @@ function Home() {
             </button>
 
           </div>
+
         )}
 
       </main>

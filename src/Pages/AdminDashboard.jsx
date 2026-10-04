@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-
+import "./AdminDashboard.css";
 function AdminDashboard() {
     const [user, setUser] = useState(null);
     const [checking, setChecking] = useState(true);
@@ -10,6 +10,7 @@ function AdminDashboard() {
     const [description, setDescription] = useState("");
     const [category, setCategory] = useState("General");
     const [message, setMessage] = useState("");
+    const [messageType, setMessageType] = useState("success");
     const [saving, setSaving] = useState(false);
     const [notices, setNotices] = useState([]);
     const [search, setSearch] = useState("");
@@ -21,6 +22,30 @@ function AdminDashboard() {
     const [editCategory, setEditCategory] = useState("General");
 
     const navigate = useNavigate();
+
+    function getCategoryIcon(category) {
+        switch (category) {
+            case "General":
+                return "📢";
+            case "Exam":
+                return "📝";
+            case "Event":
+                return "🎉";
+            case "Placement":
+                return "💼";
+            default:
+                return "📋";
+        }
+    }
+
+    function showMessage(text, type = "success") {
+        setMessage(text);
+        setMessageType(type);
+
+        setTimeout(() => {
+            setMessage("");
+        }, 3000);
+    }
 
     const totalNotices = notices.length;
 
@@ -62,13 +87,15 @@ function AdminDashboard() {
         notices.length > 0 ? notices[0] : null;
 
     const filteredNotices = notices.filter((notice) => {
+        const searchText = search.toLowerCase();
+
         const matchesSearch =
             notice.title
                 .toLowerCase()
-                .includes(search.toLowerCase()) ||
+                .includes(searchText) ||
             notice.description
                 .toLowerCase()
-                .includes(search.toLowerCase());
+                .includes(searchText);
 
         const matchesCategory =
             filterCategory === "All" ||
@@ -88,7 +115,7 @@ function AdminDashboard() {
             return;
         }
 
-        setNotices(data);
+        setNotices(data || []);
     }
 
     useEffect(() => {
@@ -144,7 +171,7 @@ function AdminDashboard() {
                 return;
             }
 
-            setNotices(noticesData);
+            setNotices(noticesData || []);
         }
 
         loadAdminData();
@@ -174,11 +201,14 @@ function AdminDashboard() {
 
         if (error) {
             console.error("Create Notice Error:", error);
-            setMessage(error.message);
+            showMessage(error.message, "error");
             return;
         }
 
-        setMessage("Notice created successfully!");
+        showMessage(
+            "Notice created successfully!",
+            "success"
+        );
 
         setTitle("");
         setDescription("");
@@ -202,12 +232,23 @@ function AdminDashboard() {
             .eq("id", id);
 
         if (error) {
-            console.error("Delete Notice Error:", error);
-            setMessage(error.message);
+            console.error(
+                "Delete Notice Error:",
+                error
+            );
+
+            showMessage(
+                error.message,
+                "error"
+            );
+
             return;
         }
 
-        setMessage("Notice deleted successfully!");
+        showMessage(
+            "Notice deleted successfully!",
+            "success"
+        );
 
         fetchNotices();
     }
@@ -225,12 +266,23 @@ function AdminDashboard() {
             .eq("id", id);
 
         if (error) {
-            console.error("Update Notice Error:", error);
-            setMessage(error.message);
+            console.error(
+                "Update Notice Error:",
+                error
+            );
+
+            showMessage(
+                error.message,
+                "error"
+            );
+
             return;
         }
 
-        setMessage("Notice updated successfully!");
+        showMessage(
+            "Notice updated successfully!",
+            "success"
+        );
 
         setEditingId(null);
         setEditTitle("");
@@ -271,13 +323,14 @@ function AdminDashboard() {
     return (
         <div className="admin-page">
 
-            {/* ================================
+            {/* =========================================
                 ADMIN HEADER
-            ================================= */}
+            ========================================== */}
 
             <div className="admin-header">
 
-                <div>
+                <div className="admin-header-content">
+
                     <p className="admin-label">
                         ADMIN PANEL
                     </p>
@@ -289,6 +342,7 @@ function AdminDashboard() {
                     <p>
                         Welcome, {user.email}
                     </p>
+
                 </div>
 
                 <div className="admin-header-actions">
@@ -319,11 +373,11 @@ function AdminDashboard() {
             </div>
 
 
-            {/* ================================
+            {/* =========================================
                 STATISTICS
-            ================================= */}
+            ========================================== */}
 
-            <div className="admin-stats">
+            <div className="admin-stats admin-stats-grid">
 
                 <div className="stat-card">
 
@@ -403,9 +457,9 @@ function AdminDashboard() {
             </div>
 
 
-            {/* ================================
+            {/* =========================================
                 NEWEST NOTICE
-            ================================= */}
+            ========================================== */}
 
             {newestNotice && (
                 <div className="newest-notice-card">
@@ -430,8 +484,16 @@ function AdminDashboard() {
 
                         <div className="newest-notice-meta">
 
-                            <span className="category">
+                            <span className="category newest-category">
+
+                                <span className="category-inline-icon">
+                                    {getCategoryIcon(
+                                        newestNotice.category
+                                    )}
+                                </span>
+
                                 {newestNotice.category}
+
                             </span>
 
                             <span>
@@ -449,9 +511,9 @@ function AdminDashboard() {
             )}
 
 
-            {/* ================================
+            {/* =========================================
                 CATEGORY SUMMARY
-            ================================= */}
+            ========================================== */}
 
             <div className="category-summary">
 
@@ -462,13 +524,19 @@ function AdminDashboard() {
                     </span>
 
                     <div>
+
                         <p>
+                            <span className="category-summary-label-icon">
+                                📢
+                            </span>
+
                             General
                         </p>
 
                         <h3>
                             {generalCount}
                         </h3>
+
                     </div>
 
                 </div>
@@ -481,13 +549,19 @@ function AdminDashboard() {
                     </span>
 
                     <div>
+
                         <p>
+                            <span className="category-summary-label-icon">
+                                📝
+                            </span>
+
                             Exam
                         </p>
 
                         <h3>
                             {examCount}
                         </h3>
+
                     </div>
 
                 </div>
@@ -500,13 +574,19 @@ function AdminDashboard() {
                     </span>
 
                     <div>
+
                         <p>
+                            <span className="category-summary-label-icon">
+                                🎉
+                            </span>
+
                             Event
                         </p>
 
                         <h3>
                             {eventCount}
                         </h3>
+
                     </div>
 
                 </div>
@@ -519,13 +599,19 @@ function AdminDashboard() {
                     </span>
 
                     <div>
+
                         <p>
+                            <span className="category-summary-label-icon">
+                                💼
+                            </span>
+
                             Placement
                         </p>
 
                         <h3>
                             {placementCount}
                         </h3>
+
                     </div>
 
                 </div>
@@ -533,16 +619,16 @@ function AdminDashboard() {
             </div>
 
 
-            {/* ================================
+            {/* =========================================
                 MAIN ADMIN CONTENT
-            ================================= */}
+            ========================================== */}
 
             <div className="admin-content">
 
 
-                {/* ================================
+                {/* =====================================
                     CREATE NOTICE
-                ================================= */}
+                ====================================== */}
 
                 <div className="admin-card">
 
@@ -623,17 +709,39 @@ function AdminDashboard() {
                     </form>
 
                     {message && (
-                        <p className="admin-message">
-                            {message}
-                        </p>
+                        <div
+                            className={`admin-message ${messageType}`}
+                        >
+
+                            <span>
+                                {messageType === "success" && "✅"}
+                                {messageType === "error" && "❌"}
+                                {messageType === "info" && "ℹ️"}
+                            </span>
+
+                            <p>
+                                {message}
+                            </p>
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setMessage("")
+                                }
+                                aria-label="Close notification"
+                            >
+                                ×
+                            </button>
+
+                        </div>
                     )}
 
                 </div>
 
 
-                {/* ================================
+                {/* =====================================
                     MANAGE NOTICES
-                ================================= */}
+                ====================================== */}
 
                 <div className="admin-card">
 
@@ -649,45 +757,137 @@ function AdminDashboard() {
                         View and manage all published campus announcements.
                     </p>
 
+
+                    {/* SEARCH + FILTER */}
+
                     <div className="admin-notice-filters">
 
-                        <input
-                            type="text"
-                            placeholder="🔍 Search notices..."
-                            value={search}
-                            onChange={(e) =>
-                                setSearch(e.target.value)
-                            }
-                        />
+                        <div className="admin-search-box">
 
-                        <select
-                            value={filterCategory}
-                            onChange={(e) =>
-                                setFilterCategory(e.target.value)
-                            }
-                        >
-                            <option value="All">
-                                All Categories
-                            </option>
+                            <span
+                                className="admin-search-icon"
+                                aria-hidden="true"
+                            >
+                                🔍
+                            </span>
 
-                            <option value="General">
-                                General
-                            </option>
+                            <input
+                                type="text"
+                                placeholder="Search notices..."
+                                value={search}
+                                onChange={(e) =>
+                                    setSearch(
+                                        e.target.value
+                                    )
+                                }
+                                aria-label="Search notices"
+                            />
 
-                            <option value="Exam">
-                                Exam
-                            </option>
+                            {search && (
+                                <button
+                                    type="button"
+                                    className="admin-search-clear"
+                                    onClick={() =>
+                                        setSearch("")
+                                    }
+                                    aria-label="Clear search"
+                                >
+                                    ×
+                                </button>
+                            )}
 
-                            <option value="Event">
-                                Event
-                            </option>
+                        </div>
 
-                            <option value="Placement">
-                                Placement
-                            </option>
-                        </select>
+
+                        <div className="admin-category-filter">
+
+                            <span
+                                className="admin-category-filter-icon"
+                                aria-hidden="true"
+                            >
+                                🏷️
+                            </span>
+
+                            <select
+                                value={filterCategory}
+                                onChange={(e) =>
+                                    setFilterCategory(
+                                        e.target.value
+                                    )
+                                }
+                                aria-label="Filter notices by category"
+                            >
+
+                                <option value="All">
+                                    All Categories
+                                </option>
+
+                                <option value="General">
+                                    📢 General
+                                </option>
+
+                                <option value="Exam">
+                                    📝 Exam
+                                </option>
+
+                                <option value="Event">
+                                    🎉 Event
+                                </option>
+
+                                <option value="Placement">
+                                    💼 Placement
+                                </option>
+
+                            </select>
+
+                        </div>
 
                     </div>
+
+
+                    {/* FILTER RESULT */}
+
+                    <div className="admin-filter-result">
+
+                        <span>
+
+                            Showing{" "}
+
+                            <strong>
+                                {filteredNotices.length}
+                            </strong>{" "}
+
+                            of{" "}
+
+                            <strong>
+                                {notices.length}
+                            </strong>{" "}
+
+                            notices
+
+                        </span>
+
+
+                        {(search ||
+                            filterCategory !== "All") && (
+
+                            <button
+                                type="button"
+                                className="admin-clear-filters"
+                                onClick={() => {
+                                    setSearch("");
+                                    setFilterCategory("All");
+                                }}
+                            >
+                                Clear Filters
+                            </button>
+
+                        )}
+
+                    </div>
+
+
+                    {/* NOTICE LIST */}
 
                     <div className="admin-notice-list">
 
@@ -712,9 +912,9 @@ function AdminDashboard() {
 
                                     {editingId === notice.id ? (
 
-                                        /* ================================
-                                           EDIT FORM
-                                        ================================= */
+                                        /* =================================
+                                           EDIT NOTICE
+                                        ================================== */
 
                                         <div className="edit-form">
 
@@ -787,6 +987,7 @@ function AdminDashboard() {
                                             <div className="edit-actions">
 
                                                 <button
+                                                    type="button"
                                                     className="save-edit-button"
                                                     onClick={() =>
                                                         handleUpdateNotice(
@@ -799,6 +1000,7 @@ function AdminDashboard() {
 
 
                                                 <button
+                                                    type="button"
                                                     className="cancel-edit-button"
                                                     onClick={
                                                         cancelEditing
@@ -813,25 +1015,37 @@ function AdminDashboard() {
 
                                     ) : (
 
-                                        /* ================================
+                                        /* =================================
                                            NOTICE DISPLAY
-                                        ================================= */
+                                        ================================== */
 
                                         <div className="admin-notice-info">
 
-                                            <span className="category">
+                                            <span className="category notice-list-category">
+
+                                                <span className="category-inline-icon">
+                                                    {getCategoryIcon(
+                                                        notice.category
+                                                    )}
+                                                </span>
+
                                                 {notice.category}
+
                                             </span>
+
 
                                             <h3>
                                                 {notice.title}
                                             </h3>
 
+
                                             <p>
                                                 {notice.description}
                                             </p>
 
+
                                             <small>
+                                                📅{" "}
                                                 {new Date(
                                                     notice.created_at
                                                 ).toLocaleDateString()}
@@ -841,6 +1055,7 @@ function AdminDashboard() {
                                             <div className="admin-notice-actions">
 
                                                 <button
+                                                    type="button"
                                                     className="edit-button"
                                                     onClick={() =>
                                                         startEditing(
@@ -853,6 +1068,7 @@ function AdminDashboard() {
 
 
                                                 <button
+                                                    type="button"
                                                     className="delete-button"
                                                     onClick={() =>
                                                         handleDeleteNotice(
